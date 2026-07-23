@@ -115,3 +115,92 @@ GitHubにログインした状態で、以下のリンクを直接クリック�
 
 もし組織（Organization）のページやリポジトリの個別設定画面を開いている場合、`Developer settings` が出ないことがあります。
 その場合は一度トップページに戻り、**右上の自分のアイコン $\rightarrow$ 「Settings」** から個人の設定ページを開き直してください。
+
+# Q3 linuxで 次回からトークンの入力を省略したい場合は？
+A3
+Linux環境でトークンの入力を省略（自動保存）するには、**`credential.helper`** 機能を使ってトークンを保存するのが最も一般的です。
+
+用途やセキュリティに応じて**3つの方法**がありますので、環境に合わせて選んでください。
+
+---
+
+## 方法1：`store` を使う（一番簡単・おすすめ）
+
+ディスク上にトークンを暗号化せずにテキストとして保存します。自分しか使わないパソコン（個人の開発PCなど）であれば、これが最も手軽で確実です。
+
+### 設定手順
+
+ターミナルで以下のコマンドを実行します。
+
+```bash
+git config --global credential.helper store
+
+```
+
+### 使い方
+
+1. 次回 `git push` を実行した際、ユーザー名（`nagoyakaizen-star`）とパスワード（`トークン`）を**1回だけ**入力します。
+2. これで `~/.git-credentials` というファイルに保存され、**2回目以降は入力を完全にスキップ**して `git push` だけで実行できるようになります。
+
+---
+
+## 方法2：`cache` を使う（メモリ上に一時保存）
+
+「ファイルにトークンを平文で残したくない」「一定時間だけ保存してほしい」という場合に向いています。指定した時間（秒）だけメモリにトークンを記憶します。
+
+### 設定手順（例：15分間保存）
+
+```bash
+git config --global credential.helper cache
+
+```
+
+### 保存時間を延ばしたい場合（例：12時間 ＝ 43200秒）
+
+```bash
+git config --global credential.helper 'cache --timeout=43200'
+
+```
+
+---
+
+## 方法3：`libsecret` を使う（最も安全・GUI環境向け）
+
+UbuntuやFedoraなどでデスクトップ環境（GNOMEやKDEなど）を使っている場合、OSの安全なキーチェーン（暗号化ストレージ）に保存する仕組みを利用できます。
+
+### 設定手順（Ubuntu/Debianの例）
+
+1. 必要なヘルパーをビルド・インストールします。
+```bash
+sudo apt update
+sudo apt install libsecret-1-0 libsecret-1-dev
+sudo make --directory=/usr/share/doc/git/contrib/credential/libsecret
+
+```
+
+
+2. Gitに設定します。
+```bash
+git config --global credential.helper /usr/share/doc/git/contrib/credential/libsecret/git-credential-libsecret
+
+```
+
+
+
+---
+
+## 補足：現在の設定を確認・解除したいとき
+
+### 現在の設定を確認する
+
+```bash
+git config --global credential.helper
+
+```
+
+### 設定を解除する（保存されたトークンをリセットしたい時など）
+
+```bash
+git config --global --unset credential.helper
+
+```
